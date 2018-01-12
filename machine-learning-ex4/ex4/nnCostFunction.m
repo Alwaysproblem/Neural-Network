@@ -80,7 +80,6 @@ function [J grad] = nnCostFunction(nn_params, ...
         
         J = J + Deb;
     end
-%     lambda = 1;
     
     theta1 = [zeros(hidden_layer_size, 1) Theta1(:, 2:end)];
     theta2 = [zeros(num_labels, 1) Theta2(:, 2:end)];
@@ -88,10 +87,35 @@ function [J grad] = nnCostFunction(nn_params, ...
     J = J + lambda / 2 * (sum(sum(theta1.^2)) + sum(sum(theta2.^2)));
     J = J/m;
     
+    Delta1 = zeros(size(Theta1));
+    Delta2 = zeros(size(Theta2));
     
     
+    for t = 1:m
+        y_i = Y(t, :)';
+        
+        a1 = [1 X(t, :)]';
+        z2 = Theta1 * a1;
+        a2 = sigmoid(z2);
+        a2 = [1 ; a2];
+        z3 = Theta2 * a2;
+        a3 = sigmoid(z3);
+        
+        delta3 = a3 - y_i;
+        
+        tt = (Theta2' * delta3);
+        delta2 = tt(2:end) .* sigmoidGradient(z2);
+
+%         delta2 = (Theta2' * delta3) .* a2 .* (1 - a2);
+%         delta2 = delta2(2:end); 
+
+        Delta1 = Delta1 + delta2 * a1';
+        Delta2 = Delta2 + delta3 * a2';
+        
+    end
     
-    
+    Theta1_grad = Delta1/m; 
+    Theta2_grad = Delta2/m;
 
 
 
